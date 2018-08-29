@@ -1,0 +1,14 @@
+name: s2geometry
+description: Dart port of the S2 Geometry library
+version: 0.1.1
+homepage: https://github.com/nbspou/dart-s2geometry
+author: Jan Boon <kaetemi@no-break.space>
+
+environment:
+  sdk: '>=2.0.0 <3.0.0'
+
+#dependencies:
+#  path: ^1.4.1
+
+dev_dependencies:
+  test: ^1.0.0
