@@ -1,4 +1,4 @@
-# dart_s2geometry
+# S2 Geometry for Dart
 
 Dart port of the C++ s2geometry and Go geo libraries.
 
