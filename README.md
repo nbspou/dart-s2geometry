@@ -1,5 +1,7 @@
 # S2 Geometry for Dart
 
+[![Build Status](https://travis-ci.org/nbspou/dart-s2geometry.svg?branch=develop)](https://travis-ci.org/nbspou/dart-s2geometry)
+
 Dart port of the C++ s2geometry and Go geo libraries.
 
 ## Usage
