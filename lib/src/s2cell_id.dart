@@ -23,6 +23,7 @@ import 's2coords.dart';
 import 's2coords_impl.dart';
 import 's2point.dart';
 export 's2point.dart';
+import 's1angle.dart';
 import 's2latlng.dart';
 import 'util/bits/bits.dart';
 
@@ -79,6 +80,70 @@ int _lsbForLevel(int level) {
 
 class S2CellId {
   S2CellId(this._id);
+  
+  S2LatLng latLng() {
+    S2Point p = this.rawPoint();
+    return S2LatLng(_latitude(p), _longitude(p));
+  }
+  
+  List<int> faceSiTi() {
+    _maybeInit();
+    List<int> res = faceIJOrientation();
+    int delta = 0;
+    if (this.isLeaf()) {
+      delta = 1;
+    } else if (((res[1] ^ (id >> 2)) & 1) != 0) {
+      delta = 2;
+    }
+    return [res[0], 2 * res[1] + delta, 2 * res[2] + delta];
+  }
+
+
+  List<int> faceIJOrientation() {
+    int face = this.face();
+    int orientation = face & kSwapMask;
+    int nbits = _kMaxLevel - 7 * _kLookupBits;
+
+    int i = 0;
+    int j = 0;
+    for (var k = 7; k >= 0; k--) {
+      orientation += ((id >> (k * 2 * _kLookupBits + 1)) & ((1 << (2 * nbits)) - 1)) << 2;
+      orientation = _lookupIJ[orientation];
+      i += (orientation >> (_kLookupBits + 2)) << (k * _kLookupBits);
+      j += ((orientation >> 2) & ((1 << _kLookupBits) - 1)) << (k * _kLookupBits);
+      orientation &= (kSwapMask | kInvertMask);
+      nbits = _kLookupBits;
+    }
+
+    if (((id & -id) & 0x1111111111111110) != 0) {
+      orientation ^= kSwapMask;
+    }
+
+    return [face, i, j, orientation];
+  }
+  
+  int face() {
+    return this.id >> _kPosBits;
+  }
+
+  bool isLeaf() {
+    return (id & 1) != 0;
+  }
+  
+  S2Point rawPoint() {
+    List<int> res = this.faceSiTi();
+    return faceUVToXYZ(
+      res[0],
+      R2Point(
+        stToUV((0.5 / _kMaxSize) * res[1]),
+        stToUV((0.5 / _kMaxSize) * res[2]),
+      ),
+    );
+  }
+
+  S1Angle _latitude(S2Point p) => S1Angle.fromRadians(atan2(p.z, sqrt(p.x * p.x + p.y * p.y)));
+
+  S1Angle _longitude(S2Point p) => S1Angle.fromRadians(atan2(p.y, p.x));
 
   S2CellId.fromPoint(S2Point p) {
     // ok
